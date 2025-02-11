@@ -74,15 +74,14 @@ app.get("/task", async (req, res) => {
     }
 });
 
-// API Route to Delete Task
-app.delete('/task/:id', async (req, res) => {
-    const taskId = req.params.id;
+app.delete('/task/:ID', async (req, res) => {
+    const taskId = req.params.ID;  // Use 'ID' here to match the URL parameter
 
     try {
         const request = pool.request();
         const result = await request
             .input('taskId', sql.Int, taskId)  // use sql.Int here to ensure proper data type
-            .query('DELETE FROM Task WHERE id = @taskId');
+            .query('DELETE FROM Task WHERE ID = @taskId');
 
         if (result.rowsAffected[0] > 0) {
             res.status(200).json({ message: 'Task deleted successfully' });
@@ -94,5 +93,6 @@ app.delete('/task/:id', async (req, res) => {
         res.status(500).json({ message: 'Error deleting task' });
     }
 });
+
 
 app.listen(5000, () => console.log("Server running on port 5000"));
