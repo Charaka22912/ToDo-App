@@ -3,11 +3,12 @@ import  { useState, useEffect } from "react";
 function Tasklist() {
     const [task, setTask] = useState("");
     const [tasks, setTasks] = useState([]);
+    const [selectedDate, setSelectedDate] = useState("");
 
     useEffect(() => {
         // Fetch tasks from the backend when the component mounts
         const fetchTasks = async () => {
-            const response = await fetch("http://localhost:5000/tasks");
+            const response = await fetch("http://localhost:5000/task");
             const data = await response.json();
             setTasks(data);  // Update state with tasks from database
         };
@@ -18,6 +19,9 @@ function Tasklist() {
     const handleChange = (event) => {
         setTask(event.target.value);
     };
+    const handleDateChange = (event) => {
+        setSelectedDate(event.target.value);
+      };
 
     const handleSubmit = async () => {
         if (!task.trim()) {
@@ -25,19 +29,25 @@ function Tasklist() {
             return;
         }
 
+        if (!selectedDate) {
+            alert("Please select a due date!");
+            return;
+        }
+
         // Send the task to the backend
         await fetch("http://localhost:5000/add-task", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ task }),
+            body: JSON.stringify({ task ,dueDate: selectedDate }),
         });
 
         // Fetch the updated list of tasks from the database
-        const response = await fetch("http://localhost:5000/tasks");
+        const response = await fetch("http://localhost:5000/task");
         const data = await response.json();
         setTasks(data);  // Update state with new list of tasks
 
-        setTask(""); // Clear input after submission
+        setTask(""); 
+        setSelectedDate("");// Clear input after submission
     };
     const handleComplete = (taskId) => {
         setTasks(tasks.map(task => 
@@ -60,15 +70,24 @@ function Tasklist() {
       };
     return (
         <>
-            <div className="ui segment">To Do List</div>
+        <hr/>
             <div >
-                <input className="ui input focus"
+                <input
                     type="text"
                     value={task}
                     onChange={handleChange}
                     placeholder="Add new Task"
+                    style={{ backgroundColor: "white", color: "black", padding: "12px", borderRadius: "5px", border: "1px solid #ccc" }}
                 />
+
+                <input type="date"
+                placeholder="Select Date"
+                
+                defaultValue={Date.now}
+                onChange={handleDateChange}
+                style={{ backgroundColor: "white", color: "black", padding: "12px", borderRadius: "5px", border: "1px solid #ccc" }}></input>
             </div>
+            <br/>
             <button className="ui positive button" type="button" onClick={handleSubmit}>Submit</button>
             <hr />
             <div>
@@ -78,6 +97,13 @@ function Tasklist() {
       <div className="ui card" key={taskItem.id}>
         <div className="content">
           <div className="header">{taskItem.task}</div>
+        </div>
+        <div className="extra content">
+            <div className="meta">
+                <span className="date">
+                    Created on: {new Date(taskItem.create_by).toLocaleDateString()}
+                </span>
+            </div>
         </div>
         <div className="extra content">
           <div className="ui two buttons">
